@@ -1,20 +1,85 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# WB App
 
-# Run and deploy your AI Studio app
+Приложение для управления отгрузками Wildberries. Позволяет вести базу товаров, формировать списки отгрузок с нумерацией коробок и экспортировать данные в XLSX и PDF.
 
-This contains everything you need to run your app locally.
+## Стек технологий
 
-View your app in AI Studio: https://ai.studio/apps/ec8067a0-aa2f-40f4-ab51-74bc82cceda5
+- [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vitejs.dev/) — сборка и dev-сервер
+- [Tailwind CSS 4](https://tailwindcss.com/) — стилизация
+- [lucide-react](https://lucide.dev/) — иконки
+- [xlsx](https://github.com/SheetJS/sheetjs) — экспорт в Excel
+- [jsPDF](https://github.com/parallax/jsPDF) + [jspdf-autotable](https://github.com/nicolevanderhoeven/jspdf-autotable) — экспорт в PDF
+- [@google/genai](https://github.com/google-gemini/generative-ai-js) — интеграция с Gemini AI
+- [Express](https://expressjs.com/) — бэкенд-сервер (опционально)
+- [dotenv](https://github.com/motdotla/dotenv) — переменные окружения
 
-## Run Locally
+## Установка и запуск
 
-**Prerequisites:**  Node.js
+```bash
+# Установка зависимостей
+npm install
 
+# Копирование переменных окружения
+cp .env.example .env
+# → отредактируйте .env, подставив свои значения
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+# Запуск dev-сервера (порт 3000)
+npm run dev
+
+# Сборка для продакшена
+npm run build
+
+# Превью собранного бандла
+npm run preview
+
+# Проверка типов TypeScript
+npm run lint
+```
+
+## Переменные окружения
+
+| Переменная       | Описание                              |
+| ---------------- | ------------------------------------- |
+| `GEMINI_API_KEY` | Ключ API для Gemini AI                |
+| `APP_URL`        | URL, на котором развёрнуто приложение |
+
+Файл `.env` не коммитится в Git (см. `.gitignore`). Используйте `.env.example` как шаблон.
+
+## Структура проекта
+
+```
+wb_app/
+├── .env.example          # Шаблон переменных окружения
+├── .gitignore
+├── index.html
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── assets/
+├── src/
+│   ├── App.tsx           # Корневой компонент, состояние приложения
+│   ├── main.tsx          # Точка входа
+│   ├── index.css
+│   ├── types.ts          # TypeScript-интерфейсы (DatabaseProduct, ShipmentItem)
+│   ├── data.ts           # База товаров по умолчанию
+│   ├── components/
+│   │   ├── Header.tsx
+│   │   ├── MainDisplay.tsx
+│   │   └── Sidebar.tsx
+│   └── utils/
+│       └── fileGenerator.ts  # Экспорт в XLSX и PDF
+└── ...
+```
+
+## Основной функционал
+
+- **База товаров** — добавление, редактирование и удаление товаров (название, штрихкод, артикул)
+- **Отгрузки** — формирование списка позиций с автоматической нумерацией коробок
+- **Сохранение** — все данные хранятся в `localStorage` браузера
+- **Экспорт** — выгрузка отгрузки в `.xlsx` и `.pdf`
+- **AI-помощник** — интеграция с Gemini AI (требуется `GEMINI_API_KEY`)
+
+## Лицензия
+
+MIT
