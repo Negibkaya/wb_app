@@ -10,7 +10,6 @@
 - [lucide-react](https://lucide.dev/) — иконки
 - [xlsx](https://github.com/SheetJS/sheetjs) — экспорт в Excel
 - [jsPDF](https://github.com/parallax/jsPDF) + [jspdf-autotable](https://github.com/nicolevanderhoeven/jspdf-autotable) — экспорт в PDF
-- [@google/genai](https://github.com/google-gemini/generative-ai-js) — интеграция с Gemini AI
 - [Express](https://expressjs.com/) — бэкенд-сервер (опционально)
 - [dotenv](https://github.com/motdotla/dotenv) — переменные окружения
 
@@ -39,10 +38,9 @@ npm run lint
 
 ## Переменные окружения
 
-| Переменная       | Описание                              |
-| ---------------- | ------------------------------------- |
-| `GEMINI_API_KEY` | Ключ API для Gemini AI                |
-| `APP_URL`        | URL, на котором развёрнуто приложение |
+| Переменная | Описание                              |
+| ---------- | ------------------------------------- |
+| `APP_URL`  | URL, на котором развёрнуто приложение |
 
 Файл `.env` не коммитится в Git (см. `.gitignore`). Используйте `.env.example` как шаблон.
 
@@ -78,7 +76,6 @@ wb_app/
 - **Отгрузки** — формирование списка позиций с автоматической нумерацией коробок
 - **Сохранение** — все данные хранятся в `localStorage` браузера
 - **Экспорт** — выгрузка отгрузки в `.xlsx` и `.pdf`
-- **AI-помощник** — интеграция с Gemini AI (требуется `GEMINI_API_KEY`)
 
 ## Лицензия
 
