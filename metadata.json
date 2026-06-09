@@ -1,6 +1,0 @@
-{
-  "name": "Поставки Wildberries",
-  "description": "Приложение для распределения товаров по коробкам поставок WB с импортом базы данных и выгрузкой в XLSX и PDF",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

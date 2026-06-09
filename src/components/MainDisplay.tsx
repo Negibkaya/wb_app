@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Trash2, Edit3, ArrowRightLeft, CreditCard, Search, X, Package, Box } from 'lucide-react';
-import { DatabaseProduct, ShipmentItem } from '../types';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { ArrowRightLeft, Search, X, Box } from "lucide-react";
+import { DatabaseProduct, ShipmentItem } from "../types";
 
 interface MainDisplayProps {
   items: ShipmentItem[];
@@ -20,22 +20,25 @@ export default function MainDisplay({
   onReplaceProduct,
   onRemoveItem,
 }: MainDisplayProps) {
-  const [activeTab, setActiveTab] = useState<'all' | number>('all');
+  const [activeTab, setActiveTab] = useState<"all" | number>("all");
   const [replacingItemId, setReplacingItemId] = useState<string | null>(null);
-  const [replaceSearchQuery, setReplaceSearchQuery] = useState('');
+  const [replaceSearchQuery, setReplaceSearchQuery] = useState("");
 
   // Extract unique sorted box numbers represented in the current shipment items
-  const boxNumbers = Array.from(new Set(items.map((item) => item.boxNumber))).sort((a, b) => a - b);
+  const boxNumbers = Array.from(
+    new Set(items.map((item) => item.boxNumber)),
+  ).sort((a, b) => a - b);
 
   // If activeTab is a box number that no longer exists, revert to 'all'
-  if (activeTab !== 'all' && !boxNumbers.includes(activeTab)) {
-    setActiveTab('all');
+  if (activeTab !== "all" && !boxNumbers.includes(activeTab)) {
+    setActiveTab("all");
   }
 
   // Filter items by tab selection
-  const displayedItems = activeTab === 'all' 
-    ? items 
-    : items.filter((item) => item.boxNumber === activeTab);
+  const displayedItems =
+    activeTab === "all"
+      ? items
+      : items.filter((item) => item.boxNumber === activeTab);
 
   // Filter products in database for replacing product search
   const filteredDatabase = replaceSearchQuery
@@ -49,26 +52,40 @@ export default function MainDisplay({
       })
     : database.slice(0, 5); // Default to first 5 products for recommendations
 
-  const handleProductReplacement = (itemId: string, product: DatabaseProduct) => {
+  const handleProductReplacement = (
+    itemId: string,
+    product: DatabaseProduct,
+  ) => {
     onReplaceProduct(itemId, product);
     setReplacingItemId(null);
-    setReplaceSearchQuery('');
+    setReplaceSearchQuery("");
   };
 
   // Stats inside active tab
-  const totalQtyInTab = displayedItems.reduce((acc, current) => acc + current.quantity, 0);
-  const uniqueSKUsInTab = new Set(displayedItems.map((item) => item.product.barcode)).size;
+  const totalQtyInTab = displayedItems.reduce(
+    (acc, current) => acc + current.quantity,
+    0,
+  );
+  const uniqueSKUsInTab = new Set(
+    displayedItems.map((item) => item.product.barcode),
+  ).size;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden" id="main-display-container">
+    <div
+      className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden"
+      id="main-display-container"
+    >
       {/* 1. Interactive Tab Headers with elegant material-style lines */}
-      <div className="bg-white border-b border-slate-200 flex flex-nowrap overflow-x-auto divide-x divide-slate-100" id="tabs-row">
+      <div
+        className="bg-white border-b border-slate-200 flex flex-nowrap overflow-x-auto divide-x divide-slate-100"
+        id="tabs-row"
+      >
         <button
-          onClick={() => setActiveTab('all')}
+          onClick={() => setActiveTab("all")}
           className={`px-6 py-4 text-xs font-bold tracking-wider uppercase transition-all duration-150 relative shrink-0 cursor-pointer ${
-            activeTab === 'all'
-              ? 'text-indigo-600 bg-slate-50/50 font-extrabold border-b-2 border-indigo-600'
-              : 'text-slate-400 hover:text-slate-600'
+            activeTab === "all"
+              ? "text-indigo-600 bg-slate-50/50 font-extrabold border-b-2 border-indigo-600"
+              : "text-slate-400 hover:text-slate-600"
           }`}
           id="tab-all"
         >
@@ -76,15 +93,17 @@ export default function MainDisplay({
         </button>
 
         {boxNumbers.map((boxNum) => {
-          const countForBox = items.filter((item) => item.boxNumber === boxNum).length;
+          const countForBox = items.filter(
+            (item) => item.boxNumber === boxNum,
+          ).length;
           return (
             <button
               key={boxNum}
               onClick={() => setActiveTab(boxNum)}
               className={`px-6 py-4 text-xs font-bold tracking-wider uppercase transition-all duration-150 flex items-center gap-1.5 shrink-0 cursor-pointer ${
                 activeTab === boxNum
-                  ? 'text-indigo-600 bg-slate-50/50 font-extrabold border-b-2 border-indigo-600'
-                  : 'text-slate-400 hover:text-slate-600'
+                  ? "text-indigo-600 bg-slate-50/50 font-extrabold border-b-2 border-indigo-600"
+                  : "text-slate-400 hover:text-slate-600"
               }`}
               id={`tab-box-${boxNum}`}
             >
@@ -111,9 +130,13 @@ export default function MainDisplay({
               <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-3">
                 <Box className="w-6 h-6 text-slate-350 animate-bounce" />
               </div>
-              <p className="text-slate-500 font-bold text-sm">В этой вкладке пока нет добавленных товаров</p>
+              <p className="text-slate-500 font-bold text-sm">
+                В этой вкладке пока нет добавленных товаров
+              </p>
               <p className="text-slate-400 text-xs mt-1.5 max-w-sm font-medium">
-                Воспользуйтесь формой слева, чтобы выбрать товар из базы данных, указать количество, номер коробки и добавить в эту виртуальную поставку.
+                Воспользуйтесь формой слева, чтобы выбрать товар из базы данных,
+                указать количество, номер коробки и добавить в эту виртуальную
+                поставку.
               </p>
             </motion.div>
           ) : (
@@ -127,22 +150,36 @@ export default function MainDisplay({
               <table className="w-full text-left" id="shipment-items-table">
                 <thead className="bg-slate-55 border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-16">#</th>
-                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest min-w-[200px]">Товар</th>
-                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Баркод / Артикул</th>
-                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center w-28">Кол-во</th>
-                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center w-28">Коробка</th>
-                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right w-24">Действия</th>
+                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-16">
+                      #
+                    </th>
+                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest min-w-[200px]">
+                      Товар
+                    </th>
+                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      Баркод / Артикул
+                    </th>
+                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center w-28">
+                      Кол-во
+                    </th>
+                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center w-28">
+                      Коробка
+                    </th>
+                    <th className="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right w-24">
+                      Действия
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {displayedItems.map((item, index) => {
                     const isReplacingActive = replacingItemId === item.id;
-                    const isLatestItem = index === 0 && activeTab === 'all'; // highlight top item
-                    
+                    const isLatestItem = index === 0 && activeTab === "all"; // highlight top item
+
                     return (
                       <React.Fragment key={item.id}>
-                        <tr className={`transition-colors group ${isLatestItem ? 'bg-indigo-50/20' : 'hover:bg-slate-50/50'}`}>
+                        <tr
+                          className={`transition-colors group ${isLatestItem ? "bg-indigo-50/20" : "hover:bg-slate-50/50"}`}
+                        >
                           {/* Chronological numbering */}
                           <td className="px-6 py-4 text-sm font-bold text-slate-900 font-mono">
                             {index + 1}
@@ -154,14 +191,14 @@ export default function MainDisplay({
                               <span className="font-bold text-slate-900 leading-snug">
                                 {item.product.name}
                               </span>
-                              
+
                               <button
                                 onClick={() => {
                                   if (isReplacingActive) {
                                     setReplacingItemId(null);
                                   } else {
                                     setReplacingItemId(item.id);
-                                    setReplaceSearchQuery('');
+                                    setReplaceSearchQuery("");
                                   }
                                 }}
                                 className="text-[10px] text-indigo-600 hover:text-indigo-700 hover:underline flex items-center gap-1 font-semibold max-w-max cursor-pointer mt-1"
@@ -175,7 +212,9 @@ export default function MainDisplay({
                           {/* Article and Barcode */}
                           <td className="px-6 py-4 font-mono text-xs text-slate-650">
                             <div className="flex flex-col">
-                              <span className="text-slate-700 font-medium">{item.product.barcode}</span>
+                              <span className="text-slate-700 font-medium">
+                                {item.product.barcode}
+                              </span>
                               <span className="text-[10px] text-slate-400">
                                 {item.product.article}
                               </span>
@@ -189,10 +228,13 @@ export default function MainDisplay({
                                 type="number"
                                 min="1"
                                 className="w-16 border border-slate-200 rounded px-2.5 py-1 text-sm text-center font-bold bg-white focus:outline-hidden focus:border-indigo-400"
-                                value={item.quantity === 0 ? '' : item.quantity}
+                                value={item.quantity === 0 ? "" : item.quantity}
                                 onChange={(e) => {
                                   const val = parseInt(e.target.value);
-                                  onUpdateQty(item.id, isNaN(val) ? 0 : Math.max(1, val));
+                                  onUpdateQty(
+                                    item.id,
+                                    isNaN(val) ? 0 : Math.max(1, val),
+                                  );
                                 }}
                               />
                             </div>
@@ -208,10 +250,15 @@ export default function MainDisplay({
                                 type="number"
                                 min="1"
                                 className="w-12 border border-slate-100 text-[10px] text-center rounded text-slate-500 bg-transparent py-0.5 focus:bg-white focus:border-indigo-200"
-                                value={item.boxNumber === 0 ? '' : item.boxNumber}
+                                value={
+                                  item.boxNumber === 0 ? "" : item.boxNumber
+                                }
                                 onChange={(e) => {
                                   const val = parseInt(e.target.value);
-                                  onUpdateBoxNum(item.id, isNaN(val) ? 0 : Math.max(1, val));
+                                  onUpdateBoxNum(
+                                    item.id,
+                                    isNaN(val) ? 0 : Math.max(1, val),
+                                  );
                                 }}
                                 title="Редактировать коробку"
                               />
@@ -224,20 +271,44 @@ export default function MainDisplay({
                               <button
                                 onClick={() => {
                                   setReplacingItemId(item.id);
-                                  setReplaceSearchQuery('');
+                                  setReplaceSearchQuery("");
                                 }}
                                 className="p-1 hover:bg-slate-100 rounded text-slate-450 hover:text-indigo-600 cursor-pointer transition-colors"
                                 title="Изменить"
                               >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                  />
+                                </svg>
                               </button>
-                              
+
                               <button
                                 onClick={() => onRemoveItem(item.id)}
                                 className="p-1 hover:bg-red-50 rounded text-slate-450 hover:text-red-650 cursor-pointer transition-colors"
                                 title="Удалить"
                               >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
                               </button>
                             </div>
                           </td>
@@ -266,14 +337,21 @@ export default function MainDisplay({
                                   className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400 font-medium"
                                   placeholder="Начните искать новый товар по названию, артикулу или баркоду..."
                                   value={replaceSearchQuery}
-                                  onChange={(e) => setReplaceSearchQuery(e.target.value)}
+                                  onChange={(e) =>
+                                    setReplaceSearchQuery(e.target.value)
+                                  }
                                 />
 
                                 <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
                                   {filteredDatabase.map((dbProduct) => (
                                     <button
                                       key={dbProduct.id}
-                                      onClick={() => handleProductReplacement(item.id, dbProduct)}
+                                      onClick={() =>
+                                        handleProductReplacement(
+                                          item.id,
+                                          dbProduct,
+                                        )
+                                      }
                                       className="w-full text-left p-2.5 hover:bg-indigo-50/30 rounded-lg flex justify-between items-center transition-colors border border-slate-50 hover:border-slate-100"
                                     >
                                       <div className="flex flex-col justify-start">
@@ -291,11 +369,13 @@ export default function MainDisplay({
                                       </div>
                                     </button>
                                   ))}
-                                  {replaceSearchQuery && filteredDatabase.length === 0 && (
-                                    <span className="text-xs text-center text-slate-400 py-4 font-medium">
-                                      Упс, по вашему запросу товары в базе не найдены.
-                                    </span>
-                                  )}
+                                  {replaceSearchQuery &&
+                                    filteredDatabase.length === 0 && (
+                                      <span className="text-xs text-center text-slate-400 py-4 font-medium">
+                                        Упс, по вашему запросу товары в базе не
+                                        найдены.
+                                      </span>
+                                    )}
                                 </div>
                               </div>
                             </td>
@@ -309,11 +389,9 @@ export default function MainDisplay({
 
               {/* Grid feedback statistics matched with style template */}
               <div className="bg-slate-50/70 px-6 py-4.5 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center text-sm text-slate-600 gap-3">
-                 <div className="flex flex-wrap gap-x-6 gap-y-1 text-slate-600 font-medium">
-                   <span>Общее кол-во: <strong className="text-slate-900">{totalQtyInTab} шт.</strong></span>
-                   <span>Уникальных SKU: <strong className="text-slate-900">{uniqueSKUsInTab}</strong></span>
-                 </div>
-                 <div className="text-slate-400 italic text-xs font-mono">Автоматическое сохранение локально</div>
+                <div className="text-slate-400 italic text-xs font-mono">
+                  Автоматическое сохранение локально
+                </div>
               </div>
             </motion.div>
           )}
