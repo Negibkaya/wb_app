@@ -1,16 +1,21 @@
 import React, { useState } from "react";
 import { FileSpreadsheet, FileText, CheckCircle2 } from "lucide-react";
+import { XlsxReportMode } from "../types";
 
 interface HeaderProps {
   onDownloadXLSX: () => void;
   onDownloadPDF: () => Promise<void>;
   itemsCount: number;
+  reportMode: XlsxReportMode;
+  onReportModeChange: (mode: XlsxReportMode) => void;
 }
 
 export default function Header({
   onDownloadXLSX,
   onDownloadPDF,
   itemsCount,
+  reportMode,
+  onReportModeChange,
 }: HeaderProps) {
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [showXlsSuccess, setShowXlsSuccess] = useState(false);
@@ -65,6 +70,20 @@ export default function Header({
 
       {/* Action Buttons: download xlsx/pdf */}
       <div className="flex items-center gap-2.5" id="download-actions">
+        <label className="sr-only" htmlFor="xlsx-report-mode">
+          Вид XLSX отчета
+        </label>
+        <select
+          id="xlsx-report-mode"
+          value={reportMode}
+          onChange={(e) => onReportModeChange(e.target.value as XlsxReportMode)}
+          className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 focus:outline-hidden focus:border-indigo-400 cursor-pointer"
+          title="Выберите вид XLSX отчета"
+        >
+          <option value="summary">Общая сводка</option>
+          <option value="byBox">По коробкам</option>
+        </select>
+
         {/* Download XLSX Button */}
         <button
           type="button"

@@ -1,7 +1,12 @@
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { DatabaseProduct, ShipmentItem } from "../types";
+import {
+  DatabaseProduct,
+  ShipmentItem,
+  XlsxReportMode,
+  BoxBarcodesMap,
+} from "../types";
 
 let cachedRobotoNormal: string | null = null;
 
@@ -289,37 +294,105 @@ export function parseShipmentFile(
 }
 
 /**
- * Exports added shipment items to a standard XLSX file.
- * The file consists of three columns in chronological order of addition:
- * Column 1: "Баркод"
- * Column 2: "Количество"
- * Column 3: "Коробка"
+ * Exports added shipment items to an XLSX report.
+ *
+ * "summary" mode creates an overall barcode summary:
+ * - Баркод
+ * - Количество
+ *
+ * "byBox" mode creates a distribution by box:
+ * - Баркод товара
+ * - Кол-во товаров
+ * - ШК короба
+ * - Срок годности
  */
 export function exportToXLSX(
   items: ShipmentItem[],
   fileName = "shipment.xlsx",
+  mode: XlsxReportMode = "summary",
+  boxBarcodes: BoxBarcodesMap = {},
 ): void {
-  // Sort by adding time (chronological)
   const sortedItems = [...items].sort((a, b) => a.createdAt - b.createdAt);
+  const isByBox = mode === "byBox";
 
-  const data = sortedItems.map((item) => ({
-    Баркод: item.product.barcode,
-    Количество: item.quantity,
-    Коробка: item.boxNumber,
-  }));
+  const data = isByBox
+    ? buildBoxDistributionRows(sortedItems, boxBarcodes)
+    : buildSummaryRows(sortedItems);
 
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Поставка");
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    isByBox ? "Распределение" : "Сводка",
+  );
 
-  // Adjust column widths
-  worksheet["!cols"] = [
-    { wch: 25 }, // Баркод
-    { wch: 15 }, // Количество
-    { wch: 12 }, // Коробка
-  ];
+  worksheet["!cols"] = isByBox
+    ? [
+        { wch: 25 }, // Баркод товара
+        { wch: 18 }, // Кол-во товаров
+        { wch: 14 }, // ШК короба
+        { wch: 16 }, // Срок годности
+      ]
+    : [
+        { wch: 25 }, // Баркод
+        { wch: 15 }, // Количество
+      ];
 
   XLSX.writeFile(workbook, fileName);
+}
+
+function buildSummaryRows(items: ShipmentItem[]): Record<string, unknown>[] {
+  const barcodeOrder: string[] = [];
+  const quantityByBarcode = new Map<string, number>();
+
+  items.forEach((item) => {
+    const barcode = item.product.barcode;
+
+    if (!quantityByBarcode.has(barcode)) {
+      barcodeOrder.push(barcode);
+      quantityByBarcode.set(barcode, 0);
+    }
+
+    quantityByBarcode.set(
+      barcode,
+      (quantityByBarcode.get(barcode) || 0) + item.quantity,
+    );
+  });
+
+  return barcodeOrder.map((barcode) => ({
+    Баркод: barcode,
+    Количество: quantityByBarcode.get(barcode) || 0,
+  }));
+}
+
+function buildBoxDistributionRows(
+  items: ShipmentItem[],
+  boxBarcodes: BoxBarcodesMap = {},
+): Record<string, unknown>[] {
+  const rowOrder: Array<{ barcode: string; boxNumber: number }> = [];
+  const quantityByKey = new Map<string, number>();
+
+  items.forEach((item) => {
+    const key = `${item.product.barcode}__${item.boxNumber}`;
+
+    if (!quantityByKey.has(key)) {
+      rowOrder.push({
+        barcode: item.product.barcode,
+        boxNumber: item.boxNumber,
+      });
+      quantityByKey.set(key, 0);
+    }
+
+    quantityByKey.set(key, (quantityByKey.get(key) || 0) + item.quantity);
+  });
+
+  return rowOrder.map(({ barcode, boxNumber }) => ({
+    "Баркод товара": barcode,
+    "Кол-во товаров": quantityByKey.get(`${barcode}__${boxNumber}`) || 0,
+    "ШК короба": boxBarcodes[boxNumber] || boxNumber,
+    "Срок годности": "",
+  }));
 }
 
 /**

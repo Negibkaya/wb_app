@@ -12,3 +12,7 @@ export interface ShipmentItem {
   boxNumber: number;
   createdAt: number; // For keeping the exact chronological order of insertion
 }
+
+export type XlsxReportMode = "summary" | "byBox";
+
+export type BoxBarcodesMap = Record<number, string>;

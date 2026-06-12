@@ -2,16 +2,18 @@ import React, { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import MainDisplay from "./components/MainDisplay";
-import { DatabaseProduct, ShipmentItem } from "./types";
+import {
+  DatabaseProduct,
+  ShipmentItem,
+  XlsxReportMode,
+  BoxBarcodesMap,
+} from "./types";
 import {
   exportToXLSX,
   exportToPDF,
   parseShipmentFile,
 } from "./utils/fileGenerator";
-import {
-  HelpCircle,
-  RefreshCw,
-} from "lucide-react";
+import { HelpCircle, RefreshCw } from "lucide-react";
 
 export default function App() {
   const [database, setDatabase] = useState<DatabaseProduct[]>(() => {
@@ -27,6 +29,16 @@ export default function App() {
   const [lastBoxNumber, setLastBoxNumber] = useState<number>(() => {
     const saved = localStorage.getItem("wb_last_box_number");
     return saved ? parseInt(saved) : 1;
+  });
+
+  const [reportMode, setReportMode] = useState<XlsxReportMode>(() => {
+    const saved = localStorage.getItem("wb_xlsx_report_mode");
+    return saved === "byBox" ? "byBox" : "summary";
+  });
+
+  const [boxBarcodes, setBoxBarcodes] = useState<BoxBarcodesMap>(() => {
+    const saved = localStorage.getItem("wb_box_barcodes");
+    return saved ? JSON.parse(saved) : {};
   });
 
   const [showGuide, setShowGuide] = useState(true);
@@ -45,6 +57,14 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("wb_last_box_number", String(lastBoxNumber));
   }, [lastBoxNumber]);
+
+  useEffect(() => {
+    localStorage.setItem("wb_xlsx_report_mode", reportMode);
+  }, [reportMode]);
+
+  useEffect(() => {
+    localStorage.setItem("wb_box_barcodes", JSON.stringify(boxBarcodes));
+  }, [boxBarcodes]);
 
   // Handle adding shipping positions (chronologically)
   const handleAddItem = (
@@ -124,6 +144,7 @@ export default function App() {
     }
     setItems([]);
     setLastBoxNumber(1);
+    setBoxBarcodes({});
     setConfirmClearShipment(false);
   };
 
@@ -142,9 +163,15 @@ export default function App() {
 
   // Export actions
   const triggerExportXLSX = () => {
+    const date = new Date().toISOString().slice(0, 10);
+    const modeSuffix =
+      reportMode === "byBox" ? "_по-коробкам" : "_общая-сводка";
+
     exportToXLSX(
       items,
-      `Поставка_WB_${new Date().toISOString().slice(0, 10)}.xlsx`,
+      `Поставка_WB_${date}${modeSuffix}.xlsx`,
+      reportMode,
+      boxBarcodes,
     );
   };
 
@@ -182,6 +209,8 @@ export default function App() {
         onDownloadXLSX={triggerExportXLSX}
         onDownloadPDF={triggerExportPDF}
         itemsCount={items.length}
+        reportMode={reportMode}
+        onReportModeChange={setReportMode}
       />
 
       {/* Main Container Layout */}
@@ -235,18 +264,35 @@ export default function App() {
                   ТОВАРОВ ПО КОРОБКАМ
                 </span>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col gap-2">
                 {sortedBoxNumbers.map((boxNum) => (
                   <div
                     key={boxNum}
-                    className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2"
+                    className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2"
                   >
-                    <span className="text-xs font-bold text-slate-600">
+                    <span className="text-xs font-bold text-slate-600 whitespace-nowrap">
                       Коробка {boxNum}:
                     </span>
-                    <span className="text-sm font-extrabold text-indigo-700">
+                    <span className="text-sm font-extrabold text-indigo-700 whitespace-nowrap">
                       {itemsPerBox[boxNum]} шт.
                     </span>
+                    <div className="flex items-center gap-1.5 ml-auto">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                        ШК короба:
+                      </span>
+                      <input
+                        type="text"
+                        className="w-36 border border-slate-200 rounded px-2 py-1 text-xs text-center font-mono bg-white focus:outline-hidden focus:border-indigo-400 placeholder:text-slate-300"
+                        placeholder="Введите ШК"
+                        value={boxBarcodes[boxNum] || ""}
+                        onChange={(e) => {
+                          setBoxBarcodes((prev) => ({
+                            ...prev,
+                            [boxNum]: e.target.value,
+                          }));
+                        }}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
